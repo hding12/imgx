@@ -1,0 +1,13 @@
+{
+  "inputs": ["tests/fixtures/transparent-logo.png"],
+  "uses": [
+    { "name": "autorotate", "params": {} },
+    { "name": "resize-long-edge", "params": { "pixels": 1800 } },
+    { "name": "keep-alpha", "params": {} },
+    { "name": "to-webp", "params": {} },
+    { "name": "lossless-webp", "params": {} }
+  ],
+  "outputs": {
+    "outDir": "dist/examples/transparent-asset"
+  }
+}

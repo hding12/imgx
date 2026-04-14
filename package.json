@@ -1,0 +1,37 @@
+{
+  "name": "imgx",
+  "version": "0.1.0",
+  "description": "Composable deterministic image processing CLI powered by libvips, ExifTool, pngquant, and cwebp.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "imgx": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "job-spec.schema.json",
+    "docs/generated"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node --input-type=module -e \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true });\" && tsc -p tsconfig.json && npm run generate:artifacts",
+    "dev": "node --experimental-strip-types src/cli.ts",
+    "generate:artifacts": "node --experimental-strip-types scripts/generate-artifacts.ts",
+    "test": "npm run build && vitest run",
+    "test:watch": "vitest",
+    "verify": "npm run build && npm run test"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

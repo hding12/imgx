@@ -1,0 +1,19 @@
+{
+  "inputs": ["tests/fixtures/oriented-photo.jpg"],
+  "uses": [
+    { "name": "autorotate", "params": {} },
+    { "name": "to-srgb", "params": {} },
+    { "name": "resize-long-edge", "params": { "pixels": 2048 } },
+    { "name": "strip-all-meta", "params": {} },
+    { "name": "to-webp", "params": {} },
+    { "name": "webp-quality", "params": { "quality": 82 } },
+    { "name": "skip-if-larger", "params": {} }
+  ],
+  "outputs": {
+    "outDir": "dist/examples/web-share"
+  },
+  "report": {
+    "json": true,
+    "path": "dist/examples/web-share/report.json"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "inputs": ["tests/fixtures/oriented-photo.jpg"],
+  "uses": [
+    { "name": "inspect-meta", "params": {} },
+    { "name": "strip-gps", "params": {} },
+    { "name": "keep-basic-meta", "params": {} },
+    { "name": "to-webp", "params": {} },
+    { "name": "webp-quality", "params": { "quality": 80 } },
+    { "name": "audit-meta-diff", "params": {} }
+  ],
+  "outputs": {
+    "outDir": "dist/examples/privacy-clean"
+  }
+}

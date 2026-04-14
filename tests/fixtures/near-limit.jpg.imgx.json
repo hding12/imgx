@@ -1,0 +1,10 @@
+{
+  "width": 1600,
+  "height": 900,
+  "bands": 3,
+  "interpretation": "srgb",
+  "format": "jpg",
+  "metadata": {
+    "FileTypeExtension": "jpg"
+  }
+}

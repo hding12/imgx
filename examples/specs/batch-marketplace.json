@@ -1,0 +1,12 @@
+{
+  "inputs": ["tests/fixtures/product-tall.png", "tests/fixtures/transparent-logo.png"],
+  "uses": [
+    { "name": "normalize-filename", "params": {} },
+    { "name": "fit-contain", "params": { "width": 1200, "height": 1200, "background": "#ffffff" } },
+    { "name": "to-jpg", "params": {} },
+    { "name": "jpg-quality", "params": { "quality": 86 } },
+    { "name": "out-dir", "params": { "path": "dist/examples/batch-marketplace" } },
+    { "name": "keep-structure", "params": { "enabled": true } },
+    { "name": "report-json", "params": { "path": "dist/examples/batch-marketplace/report.json" } }
+  ]
+}

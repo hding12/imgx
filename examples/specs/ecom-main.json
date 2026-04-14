@@ -1,0 +1,13 @@
+{
+  "inputs": ["tests/fixtures/product-tall.png"],
+  "uses": [
+    { "name": "autorotate", "params": {} },
+    { "name": "fit-contain", "params": { "width": 1600, "height": 1600, "background": "#ffffff" } },
+    { "name": "strip-all-meta", "params": {} },
+    { "name": "to-jpg", "params": {} },
+    { "name": "jpg-quality", "params": { "quality": 88 } }
+  ],
+  "outputs": {
+    "outDir": "dist/examples/ecom-main"
+  }
+}

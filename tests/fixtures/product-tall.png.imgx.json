@@ -1,0 +1,11 @@
+{
+  "width": 900,
+  "height": 1800,
+  "bands": 4,
+  "interpretation": "srgb",
+  "format": "png",
+  "metadata": {
+    "FileTypeExtension": "png",
+    "EXIF:Artist": "imgx-product"
+  }
+}

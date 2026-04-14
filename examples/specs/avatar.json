@@ -1,0 +1,15 @@
+{
+  "inputs": ["tests/fixtures/oriented-photo.jpg"],
+  "uses": [
+    { "name": "autorotate", "params": {} },
+    { "name": "fit-cover", "params": { "width": 1024, "height": 1024 } },
+    { "name": "to-srgb", "params": {} },
+    { "name": "strip-all-meta", "params": {} },
+    { "name": "normalize-filename", "params": {} },
+    { "name": "to-webp", "params": {} },
+    { "name": "webp-quality", "params": { "quality": 85 } }
+  ],
+  "outputs": {
+    "outDir": "dist/examples/avatar"
+  }
+}

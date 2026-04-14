@@ -1,0 +1,17 @@
+{
+  "width": 3000,
+  "height": 2000,
+  "bands": 3,
+  "interpretation": "srgb",
+  "format": "jpg",
+  "metadata": {
+    "FileTypeExtension": "jpg",
+    "Orientation": "Rotate 90 CW",
+    "EXIF:DateTimeOriginal": "2024:05:01 12:00:00",
+    "EXIF:CreateDate": "2024:05:01 12:00:00",
+    "EXIF:ModifyDate": "2024:05:01 12:00:00",
+    "EXIF:Artist": "imgx",
+    "GPSLatitude": 31.2,
+    "GPSLongitude": 121.5
+  }
+}

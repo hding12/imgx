@@ -1,0 +1,8 @@
+dist
+node_modules
+.DS_Store
+tmp
+coverage
+*.tgz
+.npm-cache/
+tests/fixtures/*-imgx.*
