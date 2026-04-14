@@ -4,6 +4,8 @@
 
 `imgx` is a deterministic image processing CLI for common personal and commerce workflows. It exposes composable atomic abilities instead of opaque scenario presets, so humans and future AI skills can drive the same pipeline surface.
 
+Release history lives in [`CHANGELOG.md`](./CHANGELOG.md).
+
 ## Why This Exists
 
 - 用 `libvips` 负责像素处理与编码前标准化
