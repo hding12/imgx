@@ -1,27 +1,38 @@
 # imgx
 
-`imgx` 是一个面向个人与电商常见场景的确定性图像处理 CLI。它不内置“电商主图”这类场景预设，而是提供一组可组合的原子能力，供人类与 AI 以同一套接口稳定调用。
+`imgx` is a deterministic image-processing CLI for agents, automation layers, and scripted pipelines. It exposes atomic abilities instead of opaque presets, and it keeps the execution contract stable through `JobSpec` JSON, structured results, fixed phase ordering, and explicit exit codes.
 
-`imgx` is a deterministic image processing CLI for common personal and commerce workflows. It exposes composable atomic abilities instead of opaque scenario presets, so humans and future AI skills can drive the same pipeline surface.
+Release history lives in [`CHANGELOG.md`](./CHANGELOG.md). Contribution guide: [`CONTRIBUTING.md`](./CONTRIBUTING.md). Release guide: [`docs/release-process.md`](./docs/release-process.md).
 
-Release history lives in [`CHANGELOG.md`](./CHANGELOG.md).
-Contribution guide: [`CONTRIBUTING.md`](./CONTRIBUTING.md). Release guide: [`docs/release-process.md`](./docs/release-process.md).
+## Scope
 
-## Why This Exists
+`imgx` is designed for repeatable image-processing operations that can be expressed as explicit pipeline stages:
 
-- 用 `libvips` 负责像素处理与编码前标准化
-- 用 `ExifTool` 负责元数据读取、清理、拷贝与审计
-- 用 `pngquant` 负责 PNG 终态量化
-- 用 `cwebp` 负责 WebP 终态编码
-- CLI 和未来 skill 共用 `JobSpec` JSON 接口
+- source inspection
+- orientation normalization
+- color-space normalization
+- resizing, cropping, canvas padding, and alpha flattening
+- final encoding to JPG, PNG, or WebP
+- size optimization and quality control
+- metadata removal, preservation, copying, and diffing
+- deterministic output routing and report generation
 
-## Install / 安装
+The processing core is intentionally non-semantic. `imgx` does not implement background removal, object-aware retouching, inpainting, beauty filters, or other content-aware edits.
 
-```bash
-npm install -g imgx
-```
+## Toolchain
 
-`imgx` itself is distributed as an npm package. External image binaries stay as system dependencies and are not bundled.
+`imgx` orchestrates four host tools with fixed responsibilities:
+
+- `libvips`: pixel transforms, geometry, color-space conversion, and standard encoding
+- `ExifTool`: metadata read, write, copy, and audit operations
+- `pngquant`: PNG quantization
+- `cwebp`: WebP encoding
+
+The binaries remain external system dependencies. `imgx` does not redistribute them.
+
+## Installation
+
+### System Dependencies
 
 macOS:
 
@@ -35,20 +46,53 @@ Ubuntu / Debian:
 sudo apt-get install libvips-tools libimage-exiftool-perl pngquant webp
 ```
 
-### Why Binaries Are External / 为什么外部依赖不打包
-
-- `imgx` keeps installation and licensing boundaries explicit.
-- `pngquant` uses a GPL/commercial dual-license model, so `imgx` intentionally treats it as a host dependency rather than redistributing its binary.
-- This keeps the CLI small, cross-platform friendly, and easier to wrap as a future AI skill.
-
-## doctor
+### Build From Source
 
 ```bash
-imgx doctor
-imgx doctor --use to-webp --use webp-quality,quality=82 --json
+git clone git@github.com:hding12/imgx.git
+cd imgx
+npm install
+npm run build
 ```
 
-## Atomic Abilities / 原子能力
+The current release channel is GitHub Releases. Build from source unless you already have `imgx` installed on `PATH`.
+
+In a source checkout, use `node dist/cli.js`. If `imgx` is already installed on `PATH`, substitute `imgx` for `node dist/cli.js` in the commands below.
+
+## CLI Surface
+
+```text
+imgx ability list [--json]
+imgx ability show <name> [--json]
+imgx doctor [--json]
+imgx inspect <inputs...> [--json]
+imgx run <inputs...> --use <ability[,key=value...]>...
+imgx run --spec <file|-> [--dry-run] [--json]
+```
+
+Command roles:
+
+- `ability`: inspect the registry-backed ability catalog
+- `doctor`: inspect tool availability and version-dependent capability
+- `inspect`: read source file facts and metadata before planning a run
+- `run`: execute a validated pipeline from CLI flags or `JobSpec`
+
+## Execution Model
+
+The caller cannot reorder phases. `imgx` executes a pipeline in this fixed order:
+
+```text
+inspect -> normalize -> geometry -> alpha-policy -> encode -> optimize -> metadata -> output
+```
+
+Core composition constraints:
+
+- exactly one primary geometry ability from `resize-long-edge`, `resize-short-edge`, `fit-contain`, or `fit-cover`
+- exactly one final format from `to-jpg`, `to-png`, or `to-webp`
+- `to-jpg` requires `flatten-bg` or `drop-alpha-with-bg` when alpha is present
+- `target-max-bytes` works directly with JPG and WebP; PNG requires `png-quantize`
+
+## Atomic Abilities
 
 <!-- ABILITY_TABLE_START -->
 | Ability | Phase | Dependencies | Parameters | Summary |
@@ -91,100 +135,47 @@ imgx doctor --use to-webp --use webp-quality,quality=82 --json
 | `report-json` | `output` | - | path:path | Write a JSON report file to disk. |
 <!-- ABILITY_TABLE_END -->
 
-## Composition Rules / 组合规则
+## Machine Contract
 
-- Use repeated `--use name,key=value` flags.
-- Execution order is fixed by phase and cannot be reordered by the caller.
-- Only one primary geometry ability may be selected from `resize-long-edge`, `resize-short-edge`, `fit-contain`, `fit-cover`.
-- Only one final format may be selected from `to-jpg`, `to-png`, `to-webp`.
-- `to-jpg` fails on alpha input unless `flatten-bg` or `drop-alpha-with-bg` is present.
-- `target-max-bytes` supports JPG and WebP directly; PNG requires `png-quantize`.
-
-## Common High-Frequency Combinations / 高频组合
-
-网页分享图 / Web share image:
+For agent-driven execution, prefer:
 
 ```bash
-imgx run photo.jpg \
-  --use autorotate \
-  --use to-srgb \
-  --use resize-long-edge,pixels=2048 \
-  --use strip-all-meta \
-  --use to-webp \
-  --use webp-quality,quality=82 \
-  --use skip-if-larger
+cat spec.json | node dist/cli.js run --spec - --json
 ```
 
-头像方图 / Avatar square crop:
+Contract rules:
 
-```bash
-imgx run portrait.jpg \
-  --use autorotate \
-  --use fit-cover,width=1024,height=1024 \
-  --use to-srgb \
-  --use strip-all-meta \
-  --use normalize-filename \
-  --use to-webp \
-  --use webp-quality,quality=85
-```
+- send a valid `JobSpec` document to `stdin`
+- read only JSON from `stdout`
+- keep human-readable progress and warnings on `stderr`
+- treat exit codes as part of the stable interface
 
-电商白底主图 / Commerce white-background hero image:
+Exit codes:
 
-```bash
-imgx run product.png \
-  --use autorotate \
-  --use fit-contain,width=1600,height=1600,background=#ffffff \
-  --use strip-all-meta \
-  --use to-jpg \
-  --use jpg-quality,quality=88
-```
+- `0`: all items succeeded
+- `2`: partial success
+- `3`: invalid spec or illegal ability composition
+- `4`: missing external dependency
+- `5`: processing failure
 
-透明素材导出 / Transparent asset export:
+Related artifacts:
 
-```bash
-imgx run logo.png \
-  --use autorotate \
-  --use resize-long-edge,pixels=1800 \
-  --use keep-alpha \
-  --use to-webp \
-  --use lossless-webp
-```
+- [`job-spec.schema.json`](./job-spec.schema.json): generated schema for `JobSpec`
+- [`docs/skill-bridge.md`](./docs/skill-bridge.md): concise machine-caller contract
+- [`docs/generated/abilities-table.md`](./docs/generated/abilities-table.md): generated ability table source
 
-隐私清理导出 / Privacy-clean export:
-
-```bash
-imgx run photo.jpg \
-  --use inspect-meta \
-  --use strip-gps \
-  --use keep-basic-meta \
-  --use to-webp \
-  --use webp-quality,quality=80 \
-  --use audit-meta-diff
-```
-
-批量平台出图 / Batch marketplace export:
-
-```bash
-imgx run assets/*.png \
-  --use normalize-filename \
-  --use fit-contain,width=1200,height=1200,background=#ffffff \
-  --use to-jpg \
-  --use jpg-quality,quality=86 \
-  --use out-dir,path=dist/marketplace \
-  --use keep-structure \
-  --use report-json,path=dist/marketplace/report.json
-```
-
-## JSON Spec
+## Example `JobSpec`
 
 ```json
 {
-  "inputs": ["fixtures/product.png"],
+  "inputs": ["fixtures/input.png"],
   "uses": [
     { "name": "autorotate", "params": {} },
-    { "name": "fit-contain", "params": { "width": 1600, "height": 1600, "background": "#ffffff" } },
-    { "name": "to-jpg", "params": {} },
-    { "name": "jpg-quality", "params": { "quality": 88 } }
+    { "name": "to-srgb", "params": {} },
+    { "name": "resize-long-edge", "params": { "pixels": 1600 } },
+    { "name": "strip-all-meta", "params": {} },
+    { "name": "to-webp", "params": {} },
+    { "name": "webp-quality", "params": { "quality": 82 } }
   ],
   "outputs": {
     "outDir": "dist"
@@ -197,34 +188,25 @@ imgx run assets/*.png \
 }
 ```
 
-Run with:
+## Skill Package
 
-```bash
-imgx run --spec spec.json --json
-cat spec.json | imgx run --spec - --json
-```
+[`skills/imgx`](./skills/imgx) packages `imgx` as an agent-facing skill bundle.
 
-## Examples / 示例
+Key files:
 
-Ready-to-run JSON specs live in [`examples/specs`](./examples/specs).
+- `SKILL.md`: workflow and ability-selection guidance
+- `agents/openai.yaml`: agent-facing metadata
+- `CLAUDE.md`: alternate entry note
+- `scripts/imgx-bridge.sh`: stable wrapper that resolves the local build, local npm binary, or `imgx` on `PATH`
 
-## Future Skill Compatibility / 未来 Skill 兼容
+The skill contract mirrors the CLI contract described above: run `doctor`, optionally `inspect`, then execute `run --spec - --json`.
 
-- Machine callers should prefer `imgx run --spec - --json`
-- `job-spec.schema.json` is generated from the same registry as the CLI
-- `docs/skill-bridge.md` documents stdout/stderr and exit-code expectations
-- A versioned cross-agent skill package lives in [`skills/imgx`](./skills/imgx)
+## Repository References
 
-## Skill Package / Skill 包
-
-`imgx/skills/imgx` packages the CLI as a reusable skill for Codex- and Claude-style agents:
-
-- `SKILL.md`: shared workflow and triggering guidance
-- `agents/openai.yaml`: Codex-facing metadata
-- `CLAUDE.md`: Claude-friendly entry note
-- `scripts/imgx-bridge.sh`: stable wrapper that resolves the local build, local npm bin, or global `imgx`
-
-The skill assumes the same CLI contract described above: run `doctor`, optionally `inspect`, then execute `run --spec - --json` with a `JobSpec` payload.
+- [`examples/specs`](./examples/specs): example `JobSpec` payloads
+- [`docs/test-matrix.md`](./docs/test-matrix.md): README-facing verification matrix
+- [`CONTRIBUTING.md`](./CONTRIBUTING.md): contribution rules and documentation responsibilities
+- [`docs/release-process.md`](./docs/release-process.md): versioning and GitHub Release workflow
 
 ## License
 

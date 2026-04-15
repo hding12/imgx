@@ -14,26 +14,23 @@ This matrix maps every README-facing behavior to automated verification.
 | `imgx run --spec -` | `tests/integration/cli.test.ts` |
 | Stable exit codes (`0/2/3/4/5`) | `tests/integration/cli.test.ts` |
 
-## README Combinations
+## Execution Model
 
-| README example | Coverage |
+| README behavior | Coverage |
 | --- | --- |
-| Web share image | `tests/integration/run.test.ts`, `tests/integration/readme-matrix.test.ts` |
-| Avatar square crop | `tests/integration/readme-matrix.test.ts` |
-| Commerce white-background hero image | `tests/integration/readme-matrix.test.ts` |
-| Transparent asset export | `tests/integration/readme-matrix.test.ts` |
-| Privacy-clean export | `tests/integration/readme-matrix.test.ts` |
-| Batch marketplace export | `tests/integration/readme-matrix.test.ts` |
-
-## Composition Rules
-
-| Rule | Coverage |
-| --- | --- |
-| Repeated `--use name,key=value` parsing | `tests/unit/use-parser.test.ts` |
+| Fixed phase ordering | `tests/unit/planner.test.ts`, `tests/integration/run.test.ts` |
 | Primary geometry exclusivity | `tests/unit/planner.test.ts`, `tests/integration/cli.test.ts` |
 | Final format exclusivity | `tests/integration/cli.test.ts` |
 | JPEG alpha guard | `tests/integration/cli.test.ts` |
 | PNG + `target-max-bytes` requires `png-quantize` | `tests/unit/planner.test.ts`, `tests/integration/cli.test.ts` |
+
+## Machine Contract
+
+| README behavior | Coverage |
+| --- | --- |
+| `run --spec - --json` machine execution path | `tests/integration/cli.test.ts` |
+| Repeated `--use name,key=value` parsing | `tests/unit/use-parser.test.ts` |
+| Structured schema generation for `JobSpec` | `tests/unit/schema.test.ts`, build step |
 
 ## Output Semantics
 
@@ -45,7 +42,7 @@ This matrix maps every README-facing behavior to automated verification.
 | `skip-if-larger` removes the oversized result | `tests/integration/run.test.ts`, `tests/integration/readme-matrix.test.ts` |
 | `audit-meta-diff` returns metadata differences | `tests/integration/run.test.ts` |
 
-## Generated Artifacts
+## Documentation Artifacts
 
 | Artifact | Coverage |
 | --- | --- |
