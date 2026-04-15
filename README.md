@@ -5,6 +5,7 @@
 `imgx` is a deterministic image processing CLI for common personal and commerce workflows. It exposes composable atomic abilities instead of opaque scenario presets, so humans and future AI skills can drive the same pipeline surface.
 
 Release history lives in [`CHANGELOG.md`](./CHANGELOG.md).
+Contribution guide: [`CONTRIBUTING.md`](./CONTRIBUTING.md). Release guide: [`docs/release-process.md`](./docs/release-process.md).
 
 ## Why This Exists
 
@@ -212,6 +213,18 @@ Ready-to-run JSON specs live in [`examples/specs`](./examples/specs).
 - Machine callers should prefer `imgx run --spec - --json`
 - `job-spec.schema.json` is generated from the same registry as the CLI
 - `docs/skill-bridge.md` documents stdout/stderr and exit-code expectations
+- A versioned cross-agent skill package lives in [`skills/imgx`](./skills/imgx)
+
+## Skill Package / Skill 包
+
+`imgx/skills/imgx` packages the CLI as a reusable skill for Codex- and Claude-style agents:
+
+- `SKILL.md`: shared workflow and triggering guidance
+- `agents/openai.yaml`: Codex-facing metadata
+- `CLAUDE.md`: Claude-friendly entry note
+- `scripts/imgx-bridge.sh`: stable wrapper that resolves the local build, local npm bin, or global `imgx`
+
+The skill assumes the same CLI contract described above: run `doctor`, optionally `inspect`, then execute `run --spec - --json` with a `JobSpec` payload.
 
 ## License
 
