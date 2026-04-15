@@ -1,0 +1,7 @@
+interface:
+  display_name: "Imgx"
+  short_description: "Deterministic image processing via imgx CLI"
+  default_prompt: "Use $imgx to inspect image files, build a JobSpec, and run a deterministic imgx export pipeline."
+
+policy:
+  allow_implicit_invocation: true
