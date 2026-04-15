@@ -1,6 +1,6 @@
 {
   "name": "imgx",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Composable deterministic image processing CLI powered by libvips, ExifTool, pngquant, and cwebp.",
   "license": "MIT",
   "type": "module",

@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2026-04-15
+
+### Added
+- Versioned `skills/imgx` package for agent-facing integration, including skill metadata, bridge contract references, usage examples, and a stable `imgx-bridge.sh` wrapper.
+- Contributor and maintainer workflow documentation covering repository conventions, change responsibilities, and release procedure.
+
+### Changed
+- Rewrote `README.md` as an English-only, agent-facing contract document centered on deterministic atomic abilities, fixed phase ordering, and machine integration semantics.
+- Updated the README verification matrix to track execution model, machine contract, and documentation artifacts instead of scenario-oriented examples.
+
 ## [0.1.0] - 2026-04-14
 
 ### Added
