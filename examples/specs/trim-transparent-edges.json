@@ -1,0 +1,11 @@
+{
+  "inputs": ["tests/fixtures/transparent-logo.png"],
+  "uses": [
+    { "name": "trim-transparent-edges", "params": {} },
+    { "name": "keep-alpha", "params": {} },
+    { "name": "to-png", "params": {} }
+  ],
+  "outputs": {
+    "outDir": "dist/examples/trim-transparent-edges"
+  }
+}

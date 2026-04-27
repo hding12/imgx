@@ -6,7 +6,7 @@ import { runCwebp } from "../adapters/cwebp.js";
 import { runPngquant } from "../adapters/pngquant.js";
 import { runProcess } from "../adapters/process.js";
 import { resolveBinary } from "../adapters/tools.js";
-import { runVips } from "../adapters/vips.js";
+import { findTrim, runVips } from "../adapters/vips.js";
 import { inspectBasic } from "./inspect.js";
 import { buildOutputPath } from "./pathing.js";
 import { resolvePipeline, requiredToolsForUses } from "./planner.js";
@@ -216,6 +216,51 @@ async function processInput(
         ]);
         break;
       }
+      case "trim-transparent-edges": {
+        if (!currentHasAlpha) {
+          break;
+        }
+        const latest = await inspectBasic(currentPath);
+        const alphaPath = tempPath(ctx, "trim-alpha", ".png");
+        await runAndRecord(ctx, "vips", [
+          "extract_band",
+          currentPath,
+          alphaPath,
+          String(Math.max(0, latest.bands - 1))
+        ]);
+        ctx.commands.push({
+          tool: "vips",
+          command: [resolveBinary("vips"), "find_trim", alphaPath, "-b", "0"]
+        });
+        if (ctx.dryRun) {
+          break;
+        }
+        const bounds = await findTrim(alphaPath, { background: ["0"] });
+        if (bounds.width === 0 || bounds.height === 0) {
+          throw new ImgxError(
+            "trim-transparent-edges found no visible non-transparent content to trim.",
+            EXIT_CODES.INVALID_INPUT
+          );
+        }
+        if (
+          bounds.left === 0 &&
+          bounds.top === 0 &&
+          bounds.width === latest.width &&
+          bounds.height === latest.height
+        ) {
+          break;
+        }
+        currentPath = await runTempVips(ctx, [
+          "crop",
+          currentPath,
+          tempPath(ctx, "trim-transparent-edges", ".png"),
+          String(bounds.left),
+          String(bounds.top),
+          String(bounds.width),
+          String(bounds.height)
+        ]);
+        break;
+      }
       case "flatten-bg": {
         const background = String(use.params.background ?? "#ffffff");
         currentPath = await runTempVips(ctx, [
@@ -286,6 +331,7 @@ async function processInput(
   const warnings: string[] = [];
   if (pipeline.skipIfLarger && after.bytes >= before.bytes) {
     await fs.rm(outputPath, { force: true });
+    await fs.rm(`${outputPath}.imgx.json`, { force: true });
     warnings.push("Output skipped because it was not smaller than the source.");
     return {
       input,
@@ -364,10 +410,10 @@ async function encodeOutput(options: {
         tempPng
       ]);
       if (exitCode === 99) {
-        await fs.copyFile(tempPng, outputPath);
+        await copyArtifact(tempPng, outputPath);
       }
     } else {
-      await fs.copyFile(tempPng, outputPath);
+      await copyArtifact(tempPng, outputPath);
     }
     return;
   }
@@ -516,6 +562,14 @@ function getNumberParam(uses: AbilityUse[], name: string, key: string): number |
 
 function tempPath(ctx: ExecutionContext, label: string, extension: string): string {
   return path.join(ctx.tempDir, `${ctx.commands.length}-${label}${extension}`);
+}
+
+async function copyArtifact(source: string, destination: string): Promise<void> {
+  await fs.copyFile(source, destination);
+  const sidecarSource = `${source}.imgx.json`;
+  if (await exists(sidecarSource)) {
+    await fs.copyFile(sidecarSource, `${destination}.imgx.json`);
+  }
 }
 
 function normalizeFormat(format: string): "jpg" | "png" | "webp" {

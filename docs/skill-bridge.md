@@ -15,6 +15,15 @@
   - `4`: missing external dependency
   - `5`: processing failure
 
+## Behavior Notes
+
+- `trim-transparent-edges` only removes continuous outer borders made of fully transparent pixels.
+- Internal transparent holes do not affect trim bounds.
+- If an input has no alpha channel, or already has no transparent border, `trim-transparent-edges` is a semantic no-op.
+- If an input is fully transparent, `trim-transparent-edges` fails with exit code `5` and an item-level processing error.
+- In-place overwrite is supported only when `outputs.outDir` is omitted, `outputs.suffix` is `""`, `outputs.overwrite` is `true`, and the final format keeps the original file extension.
+- Wrappers should default to writing a new sibling file unless the caller explicitly requests in-place overwrite.
+
 ## Recommended Wrapper Flow
 
 1. Call `imgx doctor --json` to confirm tool availability.

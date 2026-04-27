@@ -14,7 +14,7 @@ describe("README matrix", () => {
   it("parses every example spec file", async () => {
     const examplesDir = path.resolve("examples/specs");
     const files = (await fs.readdir(examplesDir)).filter((entry) => entry.endsWith(".json")).sort();
-    expect(files).toHaveLength(6);
+    expect(files).toHaveLength(7);
 
     for (const file of files) {
       const raw = await fs.readFile(path.join(examplesDir, file), "utf8");

@@ -17,6 +17,7 @@
 | `fit-cover` | `geometry` | `vips` | `width:integer`, `height:integer` | Resize and crop to fill a target box. |
 | `pad-canvas` | `geometry` | `vips` | `width:integer`, `height:integer`, `background?:color` | Place the current image on a larger canvas. |
 | `crop-center` | `geometry` | `vips` | `width:integer`, `height:integer` | Crop the center rectangle from the current image. |
+| `trim-transparent-edges` | `geometry` | `vips` | - | Trim only the outer fully transparent border. |
 | `flatten-bg` | `geometry` | `vips` | `background?:color` | Flatten alpha onto a solid color. |
 | `to-jpg` | `encode` | `vips` | - | Encode the final image as JPEG. |
 | `to-png` | `encode` | `vips` | - | Encode the final image as PNG. |

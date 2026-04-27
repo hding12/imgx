@@ -7,6 +7,7 @@ describe("job spec schema", () => {
       inputs: ["photo.jpg"],
       uses: [
         { name: "autorotate", params: {} },
+        { name: "trim-transparent-edges", params: {} },
         { name: "to-webp", params: {} }
       ],
       report: {
@@ -14,6 +15,7 @@ describe("job spec schema", () => {
       }
     });
     expect(parsed.inputs).toEqual(["photo.jpg"]);
+    expect(parsed.uses[1]?.name).toBe("trim-transparent-edges");
   });
 
   it("exports a JSON schema object", () => {

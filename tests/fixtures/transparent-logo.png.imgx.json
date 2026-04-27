@@ -4,6 +4,12 @@
   "bands": 4,
   "interpretation": "srgb",
   "format": "png",
+  "trimBox": {
+    "left": 100,
+    "top": 100,
+    "width": 600,
+    "height": 600
+  },
   "metadata": {
     "FileTypeExtension": "png",
     "XMP-dc:Creator": "imgx",

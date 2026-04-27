@@ -73,6 +73,28 @@ Request:
 }
 ```
 
+## Transparent Edge Trim Export
+
+Request:
+
+> Remove only the transparent outer padding around this logo, keep the alpha channel, and export the trimmed PNG.
+
+`JobSpec`:
+
+```json
+{
+  "inputs": ["tests/fixtures/transparent-logo.png"],
+  "uses": [
+    { "name": "trim-transparent-edges", "params": {} },
+    { "name": "keep-alpha", "params": {} },
+    { "name": "to-png", "params": {} }
+  ],
+  "outputs": {
+    "outDir": "dist/examples/trim-transparent-edges"
+  }
+}
+```
+
 ## Web Share Export
 
 Request:

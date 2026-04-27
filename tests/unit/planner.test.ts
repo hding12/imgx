@@ -34,4 +34,19 @@ describe("planner", () => {
       })
     ).toThrow(/png-quantize/);
   });
+
+  it("keeps trim-transparent-edges composable within geometry order", () => {
+    const pipeline = resolvePipeline({
+      inputs: ["in.png"],
+      uses: [
+        { name: "trim-transparent-edges", params: {} },
+        { name: "resize-long-edge", params: { pixels: 100 } },
+        { name: "to-webp", params: {} }
+      ]
+    });
+    expect(pipeline.phaseUses.geometry.map((item) => item.name)).toEqual([
+      "trim-transparent-edges",
+      "resize-long-edge"
+    ]);
+  });
 });

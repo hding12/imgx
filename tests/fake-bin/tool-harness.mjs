@@ -30,7 +30,7 @@ function handleVips(inputArgs) {
     return;
   }
   const [command, input, rawOutput, ...rest] = inputArgs;
-  const output = stripOptions(rawOutput);
+  const output = rawOutput ? stripOptions(rawOutput) : undefined;
   const sidecar = readSidecar(input);
   const next = structuredClone(sidecar);
 
@@ -38,6 +38,14 @@ function handleVips(inputArgs) {
     case "autorot":
       if (sidecar.metadata.Orientation === "Rotate 90 CW" || sidecar.metadata.Orientation === "Rotate 270 CW") {
         [next.width, next.height] = [sidecar.height, sidecar.width];
+        if (sidecar.trimBox) {
+          next.trimBox = {
+            left: sidecar.trimBox.top,
+            top: sidecar.width - (sidecar.trimBox.left + sidecar.trimBox.width),
+            width: sidecar.trimBox.height,
+            height: sidecar.trimBox.width
+          };
+        }
       }
       delete next.metadata.Orientation;
       break;
@@ -52,10 +60,23 @@ function handleVips(inputArgs) {
       if (crop) {
         next.width = width;
         next.height = height;
+        if (sidecar.trimBox) {
+          const scaledTrim = scaleTrimBox(sidecar, next);
+          next.trimBox = cropTrimBox(
+            scaledTrim,
+            Math.max(0, Math.floor((scaledTrim.sourceWidth - width) / 2)),
+            Math.max(0, Math.floor((scaledTrim.sourceHeight - height) / 2)),
+            width,
+            height
+          );
+        }
       } else {
         const scale = Math.min(width / sidecar.width, height / sidecar.height);
         next.width = Math.max(1, Math.round(sidecar.width * scale));
         next.height = Math.max(1, Math.round(sidecar.height * scale));
+        if (sidecar.trimBox) {
+          next.trimBox = scaleTrimBox(sidecar, next).trimBox;
+        }
       }
       break;
     }
@@ -63,13 +84,26 @@ function handleVips(inputArgs) {
       next.width = Number(rest[1]);
       next.height = Number(rest[2]);
       next.bands = Math.max(3, sidecar.bands);
+      delete next.trimBox;
       break;
     case "crop":
       next.width = Number(rest[2]);
       next.height = Number(rest[3]);
+      if (sidecar.trimBox) {
+        next.trimBox = cropTrimBox(sidecar.trimBox, Number(rest[0]), Number(rest[1]), next.width, next.height);
+      }
       break;
+    case "extract_band":
+      next.bands = Number(rest[0] ?? 0) >= 0 ? 1 : sidecar.bands;
+      break;
+    case "find_trim": {
+      const trim = sidecar.trimBox ?? { left: 0, top: 0, width: sidecar.width, height: sidecar.height };
+      process.stdout.write(`${trim.left}\n${trim.top}\n${trim.width}\n${trim.height}\n`);
+      return;
+    }
     case "flatten":
       next.bands = 3;
+      delete next.trimBox;
       break;
     case "copy":
       break;
@@ -208,9 +242,48 @@ function readSidecar(target) {
 }
 
 function writeArtifact(target, sidecar, bytes) {
+  sidecar.metadata = {
+    ...(sidecar.metadata ?? {}),
+    FileTypeExtension: sidecar.format
+  };
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(target, Buffer.alloc(bytes, 1));
   fs.writeFileSync(`${target}.imgx.json`, JSON.stringify(sidecar, null, 2));
+}
+
+function scaleTrimBox(sidecar, next) {
+  const scaleX = next.width / sidecar.width;
+  const scaleY = next.height / sidecar.height;
+  return {
+    sourceWidth: next.width,
+    sourceHeight: next.height,
+    trimBox: {
+      left: Math.round(sidecar.trimBox.left * scaleX),
+      top: Math.round(sidecar.trimBox.top * scaleY),
+      width: Math.round(sidecar.trimBox.width * scaleX),
+      height: Math.round(sidecar.trimBox.height * scaleY)
+    }
+  };
+}
+
+function cropTrimBox(trimBox, left, top, width, height) {
+  const right = left + width;
+  const bottom = top + height;
+  const trimRight = trimBox.left + trimBox.width;
+  const trimBottom = trimBox.top + trimBox.height;
+  const clippedLeft = Math.max(trimBox.left, left);
+  const clippedTop = Math.max(trimBox.top, top);
+  const clippedRight = Math.min(trimRight, right);
+  const clippedBottom = Math.min(trimBottom, bottom);
+  if (clippedRight <= clippedLeft || clippedBottom <= clippedTop) {
+    return { left: width, top: height, width: 0, height: 0 };
+  }
+  return {
+    left: clippedLeft - left,
+    top: clippedTop - top,
+    width: clippedRight - clippedLeft,
+    height: clippedBottom - clippedTop
+  };
 }
 
 function stripOptions(target) {

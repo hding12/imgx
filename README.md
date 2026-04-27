@@ -89,6 +89,7 @@ Core composition constraints:
 
 - exactly one primary geometry ability from `resize-long-edge`, `resize-short-edge`, `fit-contain`, or `fit-cover`
 - exactly one final format from `to-jpg`, `to-png`, or `to-webp`
+- `trim-transparent-edges` is composable with other geometry abilities and only removes outer fully transparent borders
 - `to-jpg` requires `flatten-bg` or `drop-alpha-with-bg` when alpha is present
 - `target-max-bytes` works directly with JPG and WebP; PNG requires `png-quantize`
 
@@ -110,6 +111,7 @@ Core composition constraints:
 | `fit-cover` | `geometry` | `vips` | width:integer, height:integer | Resize and crop to fill a target box. |
 | `pad-canvas` | `geometry` | `vips` | width:integer, height:integer, background?:color | Place the current image on a larger canvas. |
 | `crop-center` | `geometry` | `vips` | width:integer, height:integer | Crop the center rectangle from the current image. |
+| `trim-transparent-edges` | `geometry` | `vips` | - | Trim only the outer fully transparent border. |
 | `flatten-bg` | `geometry` | `vips` | background?:color | Flatten alpha onto a solid color. |
 | `to-jpg` | `encode` | `vips` | - | Encode the final image as JPEG. |
 | `to-png` | `encode` | `vips` | - | Encode the final image as PNG. |
@@ -187,6 +189,60 @@ Related artifacts:
   "failFast": false
 }
 ```
+
+Transparent-edge trim export:
+
+```json
+{
+  "inputs": ["fixtures/logo.png"],
+  "uses": [
+    { "name": "trim-transparent-edges", "params": {} },
+    { "name": "keep-alpha", "params": {} },
+    { "name": "to-png", "params": {} }
+  ],
+  "outputs": {
+    "outDir": "dist/trimmed"
+  }
+}
+```
+
+In-place overwrite edit:
+
+```json
+{
+  "inputs": ["fixtures/logo.png"],
+  "uses": [
+    { "name": "trim-transparent-edges", "params": {} },
+    { "name": "keep-alpha", "params": {} },
+    { "name": "to-png", "params": {} },
+    { "name": "suffix", "params": { "value": "" } },
+    { "name": "overwrite", "params": { "enabled": true } }
+  ]
+}
+```
+
+## Notes
+
+### `trim-transparent-edges`
+
+- trims only the outer continuous fully transparent border
+- preserves internal transparent holes
+- keeps alpha-capable output behavior unchanged
+- becomes a no-op when the input has no alpha or has no transparent border
+- fails when the entire image is transparent and there is no visible content to keep
+
+### In-place editing
+
+By default, `imgx` writes a new sibling file with the `-imgx` suffix. It does not edit the source file in place unless you opt in.
+
+To overwrite the original file intentionally:
+
+- keep the final format the same as the source extension
+- set `suffix` to `""`
+- enable `overwrite`
+- do not set `outDir`
+
+This makes the resolved output path equal the input path, so the source file is replaced atomically by the pipeline result.
 
 ## Skill Package
 

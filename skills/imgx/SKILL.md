@@ -68,7 +68,7 @@ Use this shape:
 - Web share or social upload: `autorotate`, `to-srgb`, `resize-long-edge`, `strip-all-meta`, `to-webp`, `webp-quality`, `skip-if-larger`.
 - White-background marketplace hero: `autorotate`, `fit-contain` with white background, `strip-all-meta`, `to-jpg`, `jpg-quality`.
 - Square avatar: `autorotate`, `fit-cover`, `to-srgb`, `strip-all-meta`, then `to-webp` or `to-jpg`.
-- Transparent logo or UI asset: `autorotate`, optional resize, `keep-alpha`, then `to-png` or `to-webp`; add `lossless-webp` when fidelity matters more than size.
+- Transparent logo or UI asset: `trim-transparent-edges`, optional resize, `keep-alpha`, then `to-png` or `to-webp`; add `lossless-webp` when fidelity matters more than size.
 - Privacy-clean export: `inspect-meta`, `strip-gps`, then either `keep-basic-meta` or `strip-all-meta`; add `audit-meta-diff` when the user wants evidence of what changed.
 
 ### Report outcomes honestly

@@ -225,6 +225,14 @@ export const abilityRegistry: readonly AbilityDefinition[] = [
     dependencies: ["vips"]
   },
   {
+    name: "trim-transparent-edges",
+    phase: "geometry",
+    summary: "Trim only the outer fully transparent border.",
+    description: "Uses the alpha channel to remove continuous transparent edges without touching internal transparent holes.",
+    params: [],
+    dependencies: ["vips"]
+  },
+  {
     name: "flatten-bg",
     phase: "geometry",
     summary: "Flatten alpha onto a solid color.",

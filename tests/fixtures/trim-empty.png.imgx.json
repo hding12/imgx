@@ -1,0 +1,16 @@
+{
+  "width": 320,
+  "height": 240,
+  "bands": 4,
+  "interpretation": "srgb",
+  "format": "png",
+  "trimBox": {
+    "left": 320,
+    "top": 240,
+    "width": 0,
+    "height": 0
+  },
+  "metadata": {
+    "FileTypeExtension": "png"
+  }
+}

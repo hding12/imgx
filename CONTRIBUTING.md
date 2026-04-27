@@ -47,6 +47,7 @@ npm test
 - `src/core/`: planning, execution, inspection, exit-code handling
 - `src/adapters/`: wrappers for `vips`, `exiftool`, `pngquant`, and `cwebp`
 - `examples/specs/`: machine-consumable examples referenced from the README
+- `skills/imgx/`: Codex and Claude skill package, bridge wrapper, and agent-facing references
 - `tests/`: unit and integration coverage
 - `docs/test-matrix.md`: map of README-facing behavior to automated tests
 - `docs/skill-bridge.md`: machine-caller contract for future skills and agents
@@ -84,6 +85,7 @@ If you change JSON contracts or output semantics:
 - update tests that assert `InspectResult`, `RunResult`, or exit codes
 - update `docs/skill-bridge.md`
 - update `docs/test-matrix.md` if README-facing behavior changes
+- update `skills/imgx/` references when the agent-facing contract or recommended workflows change
 
 If you add a dependency or system requirement:
 

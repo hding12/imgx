@@ -117,4 +117,110 @@ describe("integration", () => {
     expect(result.items[0]?.commands.length).toBeGreaterThan(0);
     expect(result.items[0]?.formatAfter).toBe("webp");
   });
+
+  it("trims outer transparent edges while preserving alpha output", async () => {
+    const outputDir = await fs.mkdtemp(path.join(os.tmpdir(), "imgx-trim-alpha-"));
+    const result = await runJobSpec({
+      inputs: [path.resolve("tests/fixtures/transparent-logo.png")],
+      uses: [
+        { name: "trim-transparent-edges", params: {} },
+        { name: "keep-alpha", params: {} },
+        { name: "to-png", params: {} },
+        { name: "out-dir", params: { path: outputDir } }
+      ]
+    });
+    expect(result.status).toBe("success");
+    expect(result.items[0]?.widthAfter).toBe(600);
+    expect(result.items[0]?.heightAfter).toBe(600);
+  });
+
+  it("treats internal transparent holes as no-op trim", async () => {
+    const outputDir = await fs.mkdtemp(path.join(os.tmpdir(), "imgx-trim-hole-"));
+    const result = await runJobSpec({
+      inputs: [path.resolve("tests/fixtures/trim-hole.png")],
+      uses: [
+        { name: "trim-transparent-edges", params: {} },
+        { name: "to-webp", params: {} },
+        { name: "out-dir", params: { path: outputDir } }
+      ]
+    });
+    expect(result.status).toBe("success");
+    expect(result.items[0]?.widthAfter).toBe(640);
+    expect(result.items[0]?.heightAfter).toBe(480);
+  });
+
+  it("fails trim-transparent-edges on fully transparent input", async () => {
+    const outputDir = await fs.mkdtemp(path.join(os.tmpdir(), "imgx-trim-empty-"));
+    const result = await runJobSpec({
+      inputs: [path.resolve("tests/fixtures/trim-empty.png")],
+      uses: [
+        { name: "trim-transparent-edges", params: {} },
+        { name: "to-png", params: {} },
+        { name: "out-dir", params: { path: outputDir } }
+      ]
+    });
+    expect(result.status).toBe("failed");
+    expect(result.items[0]?.error).toContain("no visible non-transparent content");
+  });
+
+  it("treats trim-transparent-edges as a no-op for non-alpha images", async () => {
+    const outputDir = await fs.mkdtemp(path.join(os.tmpdir(), "imgx-trim-no-alpha-"));
+    const result = await runJobSpec({
+      inputs: [path.resolve("tests/fixtures/oriented-photo.jpg")],
+      uses: [
+        { name: "trim-transparent-edges", params: {} },
+        { name: "to-webp", params: {} },
+        { name: "out-dir", params: { path: outputDir } }
+      ]
+    });
+    expect(result.status).toBe("success");
+    expect(result.items[0]?.widthAfter).toBe(3000);
+    expect(result.items[0]?.heightAfter).toBe(2000);
+  });
+
+  it("supports trim-transparent-edges before flattening for jpg output", async () => {
+    const outputDir = await fs.mkdtemp(path.join(os.tmpdir(), "imgx-trim-jpg-"));
+    const result = await runJobSpec({
+      inputs: [path.resolve("tests/fixtures/transparent-logo.png")],
+      uses: [
+        { name: "trim-transparent-edges", params: {} },
+        { name: "drop-alpha-with-bg", params: { background: "#ffffff" } },
+        { name: "to-jpg", params: {} },
+        { name: "jpg-quality", params: { quality: 86 } },
+        { name: "out-dir", params: { path: outputDir } }
+      ]
+    });
+    expect(result.status).toBe("success");
+    expect(result.items[0]?.formatAfter).toBe("jpg");
+    expect(result.items[0]?.widthAfter).toBe(600);
+    expect(result.items[0]?.heightAfter).toBe(600);
+  });
+
+  it("preserves geometry declaration order when trim is combined", async () => {
+    const outputDir = await fs.mkdtemp(path.join(os.tmpdir(), "imgx-trim-order-"));
+    const trimThenResize = await runJobSpec({
+      inputs: [path.resolve("tests/fixtures/transparent-logo.png")],
+      uses: [
+        { name: "trim-transparent-edges", params: {} },
+        { name: "resize-long-edge", params: { pixels: 300 } },
+        { name: "to-png", params: {} },
+        { name: "out-dir", params: { path: outputDir } },
+        { name: "suffix", params: { value: "-trim-first" } }
+      ]
+    });
+    const resizeThenTrim = await runJobSpec({
+      inputs: [path.resolve("tests/fixtures/transparent-logo.png")],
+      uses: [
+        { name: "resize-long-edge", params: { pixels: 300 } },
+        { name: "trim-transparent-edges", params: {} },
+        { name: "to-png", params: {} },
+        { name: "out-dir", params: { path: outputDir } },
+        { name: "suffix", params: { value: "-resize-first" } }
+      ]
+    });
+    expect(trimThenResize.items[0]?.widthAfter).toBe(300);
+    expect(trimThenResize.items[0]?.heightAfter).toBe(300);
+    expect(resizeThenTrim.items[0]?.widthAfter).toBe(225);
+    expect(resizeThenTrim.items[0]?.heightAfter).toBe(225);
+  });
 });

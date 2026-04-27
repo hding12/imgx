@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- `trim-transparent-edges`, a composable geometry ability that removes only fully transparent outer borders while preserving internal transparent holes and alpha output semantics.
+- Machine-consumable example spec for transparent-edge trimming.
+
+### Changed
+- Expanded agent-facing bridge and skill documentation to describe trim semantics, full-transparent failure behavior, and the explicit conditions required for in-place overwrite.
+- Updated the README and test matrix to document intentional original-file overwrite flows alongside the default sibling-file output behavior.
+
 ## [0.1.1] - 2026-04-15
 
 ### Added

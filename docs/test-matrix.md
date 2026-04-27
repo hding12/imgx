@@ -20,6 +20,7 @@ This matrix maps every README-facing behavior to automated verification.
 | --- | --- |
 | Fixed phase ordering | `tests/unit/planner.test.ts`, `tests/integration/run.test.ts` |
 | Primary geometry exclusivity | `tests/unit/planner.test.ts`, `tests/integration/cli.test.ts` |
+| Ordered `trim-transparent-edges` composition inside `geometry` | `tests/unit/planner.test.ts`, `tests/integration/run.test.ts` |
 | Final format exclusivity | `tests/integration/cli.test.ts` |
 | JPEG alpha guard | `tests/integration/cli.test.ts` |
 | PNG + `target-max-bytes` requires `png-quantize` | `tests/unit/planner.test.ts`, `tests/integration/cli.test.ts` |
@@ -38,8 +39,12 @@ This matrix maps every README-facing behavior to automated verification.
 | --- | --- |
 | `normalize-filename` kebab-case output | `tests/integration/readme-matrix.test.ts` |
 | `keep-structure` preserves nested directories | `tests/integration/run.test.ts`, `tests/integration/readme-matrix.test.ts` |
+| `trim-transparent-edges` shrinks only transparent outer borders | `tests/integration/run.test.ts` |
+| `trim-transparent-edges` is a no-op for internal holes or non-alpha inputs | `tests/integration/run.test.ts` |
+| `trim-transparent-edges` fails for fully transparent inputs | `tests/integration/run.test.ts` |
 | `report-json` writes a machine-readable report | `tests/integration/run.test.ts`, `tests/integration/readme-matrix.test.ts` |
 | `skip-if-larger` removes the oversized result | `tests/integration/run.test.ts`, `tests/integration/readme-matrix.test.ts` |
+| Explicit in-place overwrite keeps the original path | `tests/integration/run.test.ts` |
 | `audit-meta-diff` returns metadata differences | `tests/integration/run.test.ts` |
 
 ## Documentation Artifacts
