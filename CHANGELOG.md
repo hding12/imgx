@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.1.2] - 2026-04-27
 
 ### Added
 - `trim-transparent-edges`, a composable geometry ability that removes only fully transparent outer borders while preserving internal transparent holes and alpha output semantics.
