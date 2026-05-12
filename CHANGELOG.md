@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3] - 2026-05-12
+
+### Added
+- `crop-rect`, a geometry ability that crops an image at exact coordinates (x, y, width, height), useful for splitting composites and extracting arbitrary regions.
+- `fit-aspect-ratio`, a geometry ability that pads an image to a target aspect ratio (e.g. '3:4') with optional max-dim constraint.
+
 ## [0.1.2] - 2026-04-27
 
 ### Added
