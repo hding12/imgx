@@ -190,6 +190,19 @@ export const abilityRegistry: readonly AbilityDefinition[] = [
     exclusiveGroup: "primary-geometry"
   },
   {
+    name: "fit-aspect-ratio",
+    phase: "geometry",
+    summary: "Resize and pad to a fixed aspect-ratio canvas.",
+    description: "Scales the image to fit within a target aspect ratio (e.g. '3:4', '16:9'), then pads the remaining area with a background color.",
+    params: [
+      stringParam("ratio", "Target aspect ratio as 'width:height' (e.g. '3:4', '16:9').", { required: true }),
+      intParam("maxdim", "Optional max pixel value for the longest edge."),
+      colorParam("background", "Padding color.", { defaultValue: "#ffffff" })
+    ],
+    dependencies: ["vips"],
+    exclusiveGroup: "primary-geometry"
+  },
+  {
     name: "fit-cover",
     phase: "geometry",
     summary: "Resize and crop to fill a target box.",
@@ -219,6 +232,19 @@ export const abilityRegistry: readonly AbilityDefinition[] = [
     summary: "Crop the center rectangle from the current image.",
     description: "Trims the image to a target width and height using center gravity.",
     params: [
+      intParam("width", "Crop width in pixels.", { required: true }),
+      intParam("height", "Crop height in pixels.", { required: true })
+    ],
+    dependencies: ["vips"]
+  },
+  {
+    name: "crop-rect",
+    phase: "geometry",
+    summary: "Crop a rectangle at a specific position.",
+    description: "Trims the image to a target rectangle at the given coordinates, without centering.",
+    params: [
+      intParam("x", "Left edge of the crop rectangle.", { required: true }),
+      intParam("y", "Top edge of the crop rectangle.", { required: true }),
       intParam("width", "Crop width in pixels.", { required: true }),
       intParam("height", "Crop height in pixels.", { required: true })
     ],

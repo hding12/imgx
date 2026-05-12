@@ -163,6 +163,56 @@ async function processInput(
         currentHasAlpha = false;
         break;
       }
+      case "fit-aspect-ratio": {
+        const ratio = String(use.params.ratio);
+        const maxdim = use.params.maxdim ? Number(use.params.maxdim) : null;
+        const background = String(use.params.background ?? "#ffffff");
+
+        const parts = ratio.split(":").map(Number);
+        if (parts.length !== 2) {
+          throw new ImgxError(
+            `Invalid ratio format: "${ratio}". Expected "width:height" (e.g. "3:4").`,
+            EXIT_CODES.INVALID_INPUT
+          );
+        }
+        const ratioW: number = parts[0]!;
+        const ratioH: number = parts[1]!;
+        if (!Number.isFinite(ratioW) || !Number.isFinite(ratioH) || ratioW <= 0 || ratioH <= 0) {
+          throw new ImgxError(
+            `Invalid ratio values: "${ratio}". Width and height must be positive numbers.`,
+            EXIT_CODES.INVALID_INPUT
+          );
+        }
+
+        const info = await inspectBasic(currentPath);
+        let targetW = Math.max(info.width, Math.round(info.height * ratioW / ratioH));
+        let targetH = Math.max(info.height, Math.round(info.width * ratioH / ratioW));
+
+        if (maxdim !== null) {
+          const longest = Math.max(targetW, targetH);
+          if (longest > maxdim) {
+            const scale = maxdim / longest;
+            targetW = Math.round(targetW * scale);
+            targetH = Math.round(targetH * scale);
+          }
+        }
+
+        const thumb = await runTempVips(ctx, [
+          "thumbnail", currentPath,
+          tempPath(ctx, "far-thumb", ".png"),
+          String(targetW), "--height", String(targetH), "--size", "both"
+        ]);
+        currentPath = await runTempVips(ctx, [
+          "gravity", thumb,
+          tempPath(ctx, "far", ".png"),
+          "centre",
+          String(targetW), String(targetH),
+          "--extend", "background",
+          "--background", rgbToVipsBackground(background)
+        ]);
+        currentHasAlpha = false;
+        break;
+      }
       case "fit-cover": {
         const width = Number(use.params.width);
         const height = Number(use.params.height);
@@ -211,6 +261,22 @@ async function processInput(
           tempPath(ctx, "crop-center", ".png"),
           String(left),
           String(top),
+          String(width),
+          String(height)
+        ]);
+        break;
+      }
+      case "crop-rect": {
+        const x = Number(use.params.x);
+        const y = Number(use.params.y);
+        const width = Number(use.params.width);
+        const height = Number(use.params.height);
+        currentPath = await runTempVips(ctx, [
+          "crop",
+          currentPath,
+          tempPath(ctx, "crop-rect", ".png"),
+          String(x),
+          String(y),
           String(width),
           String(height)
         ]);
